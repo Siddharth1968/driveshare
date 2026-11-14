@@ -1,0 +1,12 @@
+node_modules
+**/node_modules
+**/dist
+.git
+.env
+.env.*
+!.env.example
+.local
+playwright-report
+test-results
+coverage
+apps/api/uploads/*

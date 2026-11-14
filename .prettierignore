@@ -1,0 +1,10 @@
+node_modules/
+**/node_modules/
+**/dist/
+.local/
+.env
+package-lock.json
+playwright-report/
+test-results/
+apps/web/public/demo/
+apps/api/uploads/

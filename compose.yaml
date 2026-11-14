@@ -1,0 +1,74 @@
+name: driveshare
+services:
+  db:
+    image: postgres:17.6-bookworm
+    environment:
+      POSTGRES_USER: driveshare
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-driveshare_local}
+      POSTGRES_DB: driveshare
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U driveshare -d driveshare']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      DATABASE_URL: postgresql://driveshare:${POSTGRES_PASSWORD:-driveshare_local}@db:5432/driveshare?schema=public
+      NODE_ENV: development
+      DEMO_MODE: 'true'
+      SESSION_SECRET: ${SESSION_SECRET:-local-demo-only-change-before-any-deployment}
+      APP_ORIGIN: http://localhost:${WEB_PORT:-8080}
+      PORT: '4000'
+      HOLD_MINUTES: ${HOLD_MINUTES:-5}
+      GRACE_MINUTES: ${GRACE_MINUTES:-10}
+      FINE_INTERVAL_MINUTES: ${FINE_INTERVAL_MINUTES:-15}
+      FINE_INTERVAL_RUPEES: ${FINE_INTERVAL_RUPEES:-20}
+      NO_SHOW_GRACE_MINUTES: ${NO_SHOW_GRACE_MINUTES:-30}
+      FREE_CANCELLATION_MINUTES: ${FREE_CANCELLATION_MINUTES:-60}
+      LATE_CANCELLATION_PERCENT: ${LATE_CANCELLATION_PERCENT:-10}
+      AFTER_START_CANCELLATION_PERCENT: ${AFTER_START_CANCELLATION_PERCENT:-25}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/apps/api/uploads
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://localhost:4000/api/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    restart: unless-stopped
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_TILE_URL: ${VITE_TILE_URL:-}
+        VITE_TILE_ATTRIBUTION: ${VITE_TILE_ATTRIBUTION:-}
+    ports:
+      - '127.0.0.1:${WEB_PORT:-8080}:8080'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, wget, -q, --spider, http://127.0.0.1:8080/]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+volumes:
+  postgres_data:
+  uploads:

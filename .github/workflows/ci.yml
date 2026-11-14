@@ -1,0 +1,60 @@
+name: DriveShare verification
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  application:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17.6-bookworm
+        env:
+          POSTGRES_USER: driveshare
+          POSTGRES_PASSWORD: driveshare_local
+          POSTGRES_DB: driveshare_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U driveshare -d driveshare_test"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://driveshare:driveshare_local@127.0.0.1:5432/driveshare_test?schema=public
+      DATABASE_URL: postgresql://driveshare:driveshare_local@127.0.0.1:5432/driveshare_test?schema=public
+      DEMO_MODE: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: npm run check
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - run: npm audit --audit-level=high
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-evidence
+          path: |
+            playwright-report/
+            test-results/
+  docker-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: docker compose config --quiet
+      - run: docker compose up --build -d --wait --wait-timeout 180
+      - run: node scripts/smoke-api.mjs
+      - run: docker compose logs
+        if: failure()
+      - run: docker compose down
+        if: always()

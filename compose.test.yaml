@@ -1,0 +1,16 @@
+services:
+  db-test:
+    image: postgres:17.6-bookworm
+    environment:
+      POSTGRES_USER: driveshare
+      POSTGRES_PASSWORD: driveshare_local
+      POSTGRES_DB: driveshare_test
+    ports:
+      - '127.0.0.1:5433:5432'
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U driveshare -d driveshare_test']
+      interval: 2s
+      timeout: 3s
+      retries: 20

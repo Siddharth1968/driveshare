@@ -1,0 +1,10 @@
+.vercel/
+.local/
+.env
+.env.*
+node_modules/
+coverage/
+playwright-report/
+test-results/
+apps/api/uploads/
+**/dist/

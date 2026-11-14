@@ -1,0 +1,44 @@
+{
+  "name": "@driveshare/api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "prisma generate && tsc --noEmit",
+    "start": "node dist/server.js",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "tsx src/reset.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@prisma/client": "7.10.1",
+    "@prisma/adapter-pg": "7.10.1",
+    "bcryptjs": "3.0.2",
+    "cookie-parser": "1.4.7",
+    "dotenv": "17.2.3",
+    "express": "5.3.0",
+    "express-rate-limit": "8.7.2",
+    "helmet": "8.1.0",
+    "jose": "6.1.1",
+    "luxon": "3.7.2",
+    "multer": "2.5.0",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "1.4.9",
+    "@types/express": "5.0.5",
+    "@types/luxon": "3.7.1",
+    "@types/multer": "2.0.0",
+    "@types/node": "24.10.0",
+    "@types/supertest": "6.0.3",
+    "prisma": "7.10.1",
+    "supertest": "7.1.4",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "4.1.12"
+  }
+}
