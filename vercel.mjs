@@ -1,7 +1,8 @@
-const upstream = new URL(process.env.DRIVESHARE_API_ORIGIN ?? 'https://missing.invalid');
+const upstream = new URL(
+  process.env.DRIVESHARE_API_ORIGIN ?? 'https://driveshare-staging-api.onrender.com',
+);
 
 if (
-  !process.env.DRIVESHARE_API_ORIGIN ||
   upstream.protocol !== 'https:' ||
   !upstream.hostname.endsWith('.onrender.com') ||
   upstream.username ||
@@ -22,8 +23,14 @@ export const config = {
   buildCommand: 'npm run build -w apps/web',
   outputDirectory: 'apps/web/dist',
   rewrites: [
-    { source: '/api/:path*', destination: `${upstream.origin}/api/:path*` },
-    { source: '/uploads/:path*', destination: `${upstream.origin}/uploads/:path*` },
+    {
+      source: '/api/:path*',
+      destination: 'https://driveshare-staging-api.onrender.com/api/:path*',
+    },
+    {
+      source: '/uploads/:path*',
+      destination: 'https://driveshare-staging-api.onrender.com/uploads/:path*',
+    },
     {
       source: '/((?!api(?:/|$)|uploads(?:/|$)|assets(?:/|$)|demo(?:/|$)|.*\\.[^/]+$).*)',
       destination: '/index.html',

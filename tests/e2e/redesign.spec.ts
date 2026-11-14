@@ -20,6 +20,7 @@ test.beforeEach(async ({ context }) => {
   browserErrors = [];
   await offline(context);
   await mkdir('docs/screenshots', { recursive: true });
+  await mkdir('.local', { recursive: true });
 });
 test.afterEach(() => expect(browserErrors, 'No uncaught browser errors').toEqual([]));
 test('search, IST calendar, every duration shortcut, editable checkout and interval retention', async ({
